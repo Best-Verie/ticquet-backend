@@ -7,9 +7,16 @@ import { TicketCategoriesInterface } from './interfaces/ticket.categories';
 export class TicketCategoriesService {
     constructor( @Inject('TicketCategories_MODEL')
     private ticketCategoriesModel: Model<TicketCategoriesInterface>,
-){}
+){}  
 
   async createTicketCategory(createTicketCategoryDto: TicketCategoryDto): Promise<TicketCategoryDto> {
+    const foundTicketCategory = await (await this.ticketCategoriesModel.findOne({
+      'categoryName': TicketCategoryDto.name
+    })).execPopulate();
+
+    if (foundTicketCategory) {
+      throw new Error("Cant save the same ticket category twice! (same title)");
+    }
         const createdTicketCategory = new this.ticketCategoriesModel(createTicketCategoryDto);
         return createdTicketCategory.save();
   }
